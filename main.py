@@ -214,6 +214,7 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                 
         
     def on_grid_click(self, page, listControl, item, itemControl):
+        self.loading()
         mediapageurl = self.medias[item]['url']
         medianame = self.medias[item]['title']
         res = requests.get(mediapageurl,verify=False)
