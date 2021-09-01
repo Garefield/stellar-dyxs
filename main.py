@@ -63,13 +63,14 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         controls = self.makeLayout()
         self.doModal('main',800,600,'',controls)
     
-    def makeLayout(self):   
-        mainmenu_layout = [
-            {'type':'link','name':'title','@click':'onMainMenuClick'}
-        ]
+    def makeLayout(self):
+        mainmenulist = []
+        for cat in self.mainmenu:
+            mainmenulist.append({'type':'link','name':cat['title'],'@click':'onMainMenuClick','width':60})
         secmenu_layout = [
             {'type':'link','name':'title','@click':'onSecMenuClick'}
         ]
+
         mediagrid_layout = [
             [
                 {
@@ -92,18 +93,8 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                 'height':30
             },
             {'type':'space','height':10},
-            {'group':[
-                    {'type':'grid','name':'mediagrid','itemlayout':mainmenu_layout,'value':self.mainmenu,'separator':True,'itemwidth':60}
-                ],
-                'height':30,
-                'width':1.0
-            },
-            {'group':[
-                    {'type':'grid','name':'secgrid','itemlayout':secmenu_layout,'value':self.secmenu,'separator':True,'itemwidth':60}
-                ],
-                'height':30,
-                'width':1.0
-            },
+            {'group':mainmenulist,'height':30},
+            {'group':[],'height':30,'name':'secmenugroup'},
             {'type':'space','height':5},
             {'type':'grid','name':'mediagrid','itemlayout':mediagrid_layout,'value':self.medias,'separator':True,'itemheight':220,'itemwidth':120},
             {'group':
@@ -135,7 +126,8 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
             self.onProcessDetalPage(searchurl)
         self.loading(True)
     
-    def onMainMenuClick(self, page, listControl, item, itemControl):
+    def onMainMenuClick(self,pageId,control,*args):
+        print(control)
         self.loading()
         self.firstpage = ''
         self.previouspage = ''
@@ -143,11 +135,20 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.lastpage = ''
         self.cur_page = ''
         self.secmenu = []
-        pageurl = self.dyxsurl + self.mainmenu[item]['url']
-        self.onMainMenuReload(pageurl)
+        pageurl = ''
+        for cat in self.mainmenu:
+            print(cat['title'])
+            if cat['title'] == control:
+                pageurl = self.dyxsurl + cat['url']
+                break
+        print(pageurl)
+        if pageurl != '':
+            self.onMainMenuReload(pageurl)
         self.loading(True)
-        
+    
     def onMainMenuReload(self,pageurl):
+        controls = []
+        self.player.removeControl('main','canremovemenugroup')
         res = requests.get(pageurl,verify=False)
         if res.status_code == 200:         
             bs = bs4.BeautifulSoup(res.content.decode('UTF-8','ignore'),'html.parser')
@@ -165,7 +166,11 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                         menuname = secmeninfo.get('title')
                         menuurl = self.dyxsurl + secmeninfo.get('href')
                         self.secmenu.append({'title':menuname,'url':menuurl})
-                self.player.updateControlValue('main','secgrid',self.secmenu)
+
+        for cat in self.secmenu:
+            controls.append({'type':'link','name':cat['title'],'width':60,'@click':'onSecondMenuClick'})  
+        row = {'group':controls,'name':'canremovemenugroup'}
+        self.player.addControl('main','secmenugroup',row)
         
     def reloadMedias(self,moduleitems):
         self.medias = []
@@ -187,13 +192,17 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                 self.medias.append({'picture':imgurl,'title':name,'url':url})
         self.player.updateControlValue('main','mediagrid',self.medias)
     
-    
-    def onSecMenuClick(self, page, listControl, item, itemControl):
+    def onSecondMenuClick(self,pageId,control,*args):
         self.loading()
-        pageurl = self.secmenu[item]['url']
-        self.onProcessDetalPage(pageurl)
+        pageurl = ''
+        for cat in self.secmenu:
+            if cat['title'] == control:
+                pageurl = cat['url']
+                break
+        if pageurl != '':
+            self.onProcessDetalPage(pageurl)
         self.loading(True)
-          
+     
     def onProcessDetalPage(self,pageurl):
         self.firstpage = ''
         self.previouspage = ''
