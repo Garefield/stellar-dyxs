@@ -9,7 +9,7 @@ import urllib.request
 import math
 import json
 
-eighty_url = 'http://dyxs14.com'
+dyxx_urls = ['http://dyxs11.com', 'http://dyxs12.com', 'http://dyxs13.com', 'http://dyxs14.com', 'http://dyxs15.com', 'http://dianying.in', 'http://dianying.im', 'http://dianyingim.com']
 
 
 def concatUrl(url1, url2):
@@ -34,7 +34,11 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.secmenu = []
         self.medias = []
         self.cur_page = ''
-        self.onMainMenuReload(eighty_url)
+        self.dyxsurl = self.getDyxsUrl()
+        if self.dyxsurl == '':
+            self.showText('无法打开电影先生网站')
+        else:
+            self.onMainMenuReload(self.dyxsurl)
         self.firstpage = ''
         self.previouspage = ''
         self.nextpage = ''
@@ -42,6 +46,18 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.xls = []
         self.allmovidesdata = {}
         self.playurl = ''
+    
+    def getDyxsUrl(self):
+        for url in dyxx_urls:
+            urlCanOpen = True
+            try:
+                res = requests.get(url,verify=False)
+            except Exception:
+                urlCanOpen = False
+            if urlCanOpen:
+                if res.status_code == 200:
+                    return url
+        return ''
     
     def show(self):
         controls = self.makeLayout()
@@ -88,10 +104,8 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                 'height':30,
                 'width':1.0
             },
-            
             {'type':'space','height':5},
-            {'group':[],'height':30,'name':'secmenugroup'},
-            {'type':'grid','name':'mediagrid','itemlayout':mediagrid_layout,'value':self.medias,'separator':True,'itemheight':200,'itemwidth':120},
+            {'type':'grid','name':'mediagrid','itemlayout':mediagrid_layout,'value':self.medias,'separator':True,'itemheight':220,'itemwidth':120},
             {'group':
                 [
                     {'type':'space'},
@@ -116,8 +130,9 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
     def onSearch(self, *args):
         self.loading()
         search_word = self.player.getControlValue('main','search_edit')
-        searchurl = eighty_url +'/search-' + urllib.parse.quote(search_word,encoding='utf-8') + '-------------/'
-        self.onProcessDetalPage(searchurl)
+        if len(search_word) > 0:
+            searchurl = self.dyxsurl +'/search-' + urllib.parse.quote(search_word,encoding='utf-8') + '-------------/'
+            self.onProcessDetalPage(searchurl)
         self.loading(True)
     
     def onMainMenuClick(self, page, listControl, item, itemControl):
@@ -128,7 +143,7 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.lastpage = ''
         self.cur_page = ''
         self.secmenu = []
-        pageurl = eighty_url + self.mainmenu[item]['url']
+        pageurl = self.dyxsurl + self.mainmenu[item]['url']
         self.onMainMenuReload(pageurl)
         self.loading(True)
         
@@ -148,7 +163,7 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                     if iteminfo:
                         secmeninfo = iteminfo[0]
                         menuname = secmeninfo.get('title')
-                        menuurl = eighty_url + secmeninfo.get('href')
+                        menuurl = self.dyxsurl + secmeninfo.get('href')
                         self.secmenu.append({'title':menuname,'url':menuurl})
                 self.player.updateControlValue('main','secgrid',self.secmenu)
         
@@ -168,7 +183,7 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                 except:
                     nameinfo = item.select('div.video-info > div.video-info-header > h3 > a')[0]
                     name = nameinfo.string
-                url = eighty_url + nameinfo.get('href')
+                url = self.dyxsurl + nameinfo.get('href')
                 self.medias.append({'picture':imgurl,'title':name,'url':url})
         self.player.updateControlValue('main','mediagrid',self.medias)
     
@@ -200,13 +215,13 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                 if pages:
                     n = len(pages)
                     if pages[0]:
-                        self.firstpage = eighty_url + pages[0].get('href')
+                        self.firstpage = self.dyxsurl + pages[0].get('href')
                     if pages[1]:
-                        self.previouspage = eighty_url + pages[1].get('href')
+                        self.previouspage = self.dyxsurl + pages[1].get('href')
                     if pages[n - 2]:
-                        self.nextpage = eighty_url + pages[n - 2].get('href')
+                        self.nextpage = self.dyxsurl + pages[n - 2].get('href')
                     if pages[n - 1]:
-                        self.lastpage = eighty_url + pages[n - 1].get('href')
+                        self.lastpage = self.dyxsurl + pages[n - 1].get('href')
         print("self.firstpage:" + self.firstpage)
         print("self.previouspage:" + self.previouspage)
         print("self.nextpage:" + self.nextpage)
@@ -248,7 +263,7 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                     moviegroup = jj.select('div > a')
                     if moviegroup:
                         for movieinfo in moviegroup:
-                            movieurl = eighty_url + movieinfo.get('href')
+                            movieurl = self.dyxsurl + movieinfo.get('href')
                             moviename = movieinfo.select('span')[0].string
                             movies.append({'playname':moviename,'url':movieurl})
                     allmovies.append(movies)
@@ -280,7 +295,7 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
             }
         ]
         self.loading(True)
-        self.player.doModal(medianame,800,420,medianame,controls)        
+        self.player.doModal(medianame,800,420,medianame,controls)             
         
     def onClickFirstPage(self, *args):
         if self.firstpage == '':
