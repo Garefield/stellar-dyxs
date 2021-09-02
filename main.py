@@ -34,11 +34,6 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.secmenu = []
         self.medias = []
         self.cur_page = ''
-        self.dyxsurl = self.getDyxsUrl()
-        if self.dyxsurl == '':
-            self.showText('无法打开电影先生网站')
-        else:
-            self.onMainMenuReload(self.dyxsurl)
         self.firstpage = ''
         self.previouspage = ''
         self.nextpage = ''
@@ -46,6 +41,14 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.xls = []
         self.allmovidesdata = {}
         self.playurl = ''
+    
+    def start(self):
+        super().start()
+        self.dyxsurl = self.getDyxsUrl()
+        if self.dyxsurl == '':
+            self.showText('无法打开电影先生网站')
+        else:
+            self.onMainMenuReload(self.dyxsurl)
     
     def getDyxsUrl(self):
         for url in dyxx_urls:
@@ -291,20 +294,20 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                     {'type':'label','name':'info','value':infostr,'width':0.8}
                 ],
                 'width':1.0,
-                'height':240
+                'height':250
             },
             {'group':
-                {'type':'grid','name':'xllist','itemlayout':xl_list_layout,'value':self.xls,'separator':True,'itemheight':25,'itemwidth':80},
-                'height':30
+                {'type':'grid','name':'xllist','itemlayout':xl_list_layout,'value':self.xls,'separator':True,'itemheight':30,'itemwidth':80},
+                'height':45
             },
             {'type':'space','height':5},
             {'group':
-                {'type':'grid','name':'movielist','itemlayout':movie_list_layout,'value':actmovies,'separator':True,'itemheight':25,'itemwidth':60},
+                {'type':'grid','name':'movielist','itemlayout':movie_list_layout,'value':actmovies,'separator':True,'itemheight':30,'itemwidth':60},
                 'height':150
             }
         ]
         self.loading(True)
-        self.player.doModal(medianame,800,420,medianame,controls)             
+        self.player.doModal(medianame,800,460,medianame,controls)             
         
     def onClickFirstPage(self, *args):
         if self.firstpage == '':
