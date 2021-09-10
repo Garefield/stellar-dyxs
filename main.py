@@ -54,7 +54,7 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         for url in dyxx_urls:
             urlCanOpen = True
             try:
-                res = requests.get(url,verify=False)
+                requests.get(url,timeout=2,verify=False)
             except Exception:
                 urlCanOpen = False
             if urlCanOpen:
