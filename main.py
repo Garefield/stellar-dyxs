@@ -8,6 +8,7 @@ import urllib.parse
 import urllib.request
 import math
 import json
+import urllib3
 
 dyxx_urls = ['http://dyxs11.com', 'http://dyxs12.com', 'http://dyxs13.com', 'http://dyxs14.com', 'http://dyxs15.com', 'http://dianying.in', 'http://dianying.im', 'http://dianyingim.com']
 
@@ -41,12 +42,13 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.xls = []
         self.allmovidesdata = {}
         self.playurl = ''
+        urllib3.disable_warnings()
     
     def start(self):
         super().start()
         self.dyxsurl = self.getDyxsUrl()
         if self.dyxsurl == '':
-            self.showText('无法打开电影先生网站')
+            self.player.showText('无法打开电影先生网站')
         else:
             self.onMainMenuReload(self.dyxsurl)
     
