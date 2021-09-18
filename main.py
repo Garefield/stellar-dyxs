@@ -309,7 +309,9 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
             }
         ]
         self.loading(True)
-        self.player.doModal(medianame,800,460,medianame,controls)             
+        result,control = self.player.doModal(medianame,800,460,medianame,controls)  
+        if result == False:
+            del self.allmovidesdata[medianame]
         
     def onClickFirstPage(self, *args):
         if self.firstpage == '':
