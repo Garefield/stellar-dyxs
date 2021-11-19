@@ -41,7 +41,6 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         self.lastpage = ''
         self.xls = []
         self.allmovidesdata = {}
-        self.playurl = ''
         urllib3.disable_warnings()
     
     def start(self):
@@ -348,9 +347,9 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
         if len(self.allmovidesdata[page]['actmovies']) > item:
             playurl = self.allmovidesdata[page]['actmovies'][item]['url']
             print(playurl)
-            self.playMovieUrl(playurl)
+            self.playMovieUrl(playurl,page)
             
-    def playMovieUrl(self,playpageurl):
+    def playMovieUrl(self,playpageurl,page):
         res = requests.get(playpageurl)
         if res.status_code == 200:
             bs = bs4.BeautifulSoup(res.content.decode('UTF-8','ignore'),'html.parser')
@@ -360,8 +359,11 @@ class dyxsplugin(StellarPlayer.IStellarPlayerPlugin):
                 jsonstr = re.findall(r"var player_aaaa=(.+)",scriptitem.string)[0]
                 playerjson = json.loads(jsonstr)
                 encodeurl  = playerjson['url']
-                self.playurl = urllib.parse.unquote(encodeurl)
-                self.player.play(self.playurl)
+                playurl = urllib.parse.unquote(encodeurl)
+                try:
+                    self.player.play(playurl, caption=page)
+                except:
+                    self.player.play(playurl)  
             
     def loading(self, stopLoading = False):
         if hasattr(self.player,'loadingAnimation'):
